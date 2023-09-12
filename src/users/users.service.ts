@@ -13,9 +13,9 @@ export class UsersService {
         email,
       },
     });
-    if (!user) return new Error('Invalid Email');
+    if (!user) throw new Error('Invalid Email');
     const passwordMatch = await compare(password, user.password);
-    if (!passwordMatch) return new Error('Invalid Password');
+    if (!passwordMatch) throw new Error('Invalid Password');
     delete user.password;
     return user;
   }
