@@ -1,0 +1,78 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Messages {
+  messageId String    @id @default(auto()) @map("_id") @db.ObjectId
+  slug      String    @unique
+  title     String
+  body      String
+  author    User      @relation(fields: [authorId], references: [userId])
+  authorId  String    @db.ObjectId
+  comments  Comment[]
+}
+
+model User {
+  userId          String           @id @default(auto()) @map("_id") @db.ObjectId
+  email           String           @unique
+  name            String?
+  password        String
+  posts           Messages[]
+  reviews         Reviews[]
+  serviceRequests ServiceRequest[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt()
+  userType        String
+  providers       Providers?
+}
+
+model Providers {
+  providerId      String           @id @default(auto()) @map("_id") @db.ObjectId
+  description     String
+  category        String
+  profilePic      String
+  location        String
+  priceRange      Int
+  availability    Boolean
+  reviews         Reviews[]
+  serviceRequests ServiceRequest[]
+  userId          String           @unique @db.ObjectId
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt()
+  user            User             @relation(fields: [userId], references: [userId])
+}
+
+model Reviews {
+  reviewId   String    @id @default(auto()) @map("_id") @db.ObjectId
+  profile    Providers @relation(fields: [providerId], references: [providerId])
+  providerId String    @db.ObjectId
+  user       User      @relation(fields: [userId], references: [userId])
+  userId     String    @db.ObjectId
+  rating     Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt()
+}
+
+model ServiceRequest {
+  requestId  String    @id @default(auto()) @map("_id") @db.ObjectId
+  status     String
+  detail     String
+  profile    Providers @relation(fields: [providerId], references: [providerId])
+  providerId String    @db.ObjectId
+  user       User      @relation(fields: [userId], references: [userId])
+  userId     String    @db.ObjectId
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt()
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  comment   String
+  message   Messages @relation(fields: [messageId], references: [messageId])
+  messageId String   @db.ObjectId
+}
