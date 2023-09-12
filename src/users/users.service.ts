@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { compare } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
+import { RegisterDTO } from 'src/DTO/auth.dto';
 
 @Injectable()
 export class UsersService {
@@ -17,5 +18,14 @@ export class UsersService {
     if (!passwordMatch) return new Error('Invalid Password');
     delete user.password;
     return user;
+  }
+
+  async register(user: RegisterDTO) {
+    const hashedPassword = await hash(user.password, 10);
+    const newUser = await this.db.user.create({
+      data: { ...user, password: hashedPassword },
+    });
+    delete newUser.password;
+    return newUser;
   }
 }
